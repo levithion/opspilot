@@ -6,6 +6,7 @@ price. Answer text from the mock is a plain extract of the knowledge base; use a
 
 | File | Shows |
 |---|---|
+| `claude-desktop-tools.png` | The 9 tools discovered by Claude Desktop through the MCP server (Settings > Connectors > opspilot) |
 | `chat-search-kb.png` | Cited answer from the knowledge base; tools called, latency and cost on every reply |
 | `chat-approval-pending.png` | A reset request becomes `pending_approval`; nothing is executed |
 | `chat-injection-blocked.png` | Prompt-injection attempt blocked before any LLM spend |
@@ -18,4 +19,4 @@ price. Answer text from the mock is a plain extract of the knowledge base; use a
 | `audit-log.png` | Hash-chain status, client and `Approved by` columns |
 | `api-docs.png` | OpenAPI docs for the tool gateway, tickets and admin endpoints |
 
-Not captured here (needs your desktop apps): Claude Desktop tool list and the MCP calls.
+`claude-desktop-tools.png` was captured by hand from the Claude Desktop settings and cropped to the connector panel.

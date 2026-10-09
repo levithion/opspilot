@@ -54,6 +54,11 @@ Design notes and known limits: [docs/architecture.md](docs/architecture.md).
 
 Captured from the running app with the offline demo data (see [docs/screenshots](docs/screenshots)).
 
+### Connected to Claude Desktop (MCP)
+Claude Desktop discovers all 9 tools from the MCP server. Calls it makes are permission-checked and audited server-side.
+
+![OpsPilot's 9 tools discovered by Claude Desktop](docs/screenshots/claude-desktop-tools.png)
+
 ### Answers with citations
 ![Cited answer from the knowledge base](docs/screenshots/chat-search-kb.png)
 
