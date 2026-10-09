@@ -1,0 +1,50 @@
+# Local stack:  docker compose up --build
+#   api      -> http://localhost:${OPSPILOT_PORT:-8000}   (chat UI, /dashboard, /docs)
+#   qdrant   -> internal only        (vector DB reachable by the api at http://qdrant:6333)
+#   ticketing-> http://localhost:8100   (optional standalone mock ticketing API: --profile ticketing)
+#   n8n      -> http://localhost:5678   (workflow automation: --profile automation)
+#   langfuse -> see docs/observability.md (self-hosted tracing is run from Langfuse's own compose file)
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.12.4
+    volumes: ["qdrant_data:/qdrant/storage"]
+    # Not published to the host (the api reaches it on the compose network), which avoids clashing with a
+    # Qdrant you already run. To inspect it, add:  ports: ["6333:6333"]
+
+  api:
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      OPSPILOT_QDRANT_URL: http://qdrant:6333
+      OPSPILOT_DATA_DIR: /data
+    volumes: ["opspilot_data:/data"]
+    ports: ["${OPSPILOT_PORT:-8000}:8000"]
+    depends_on: [qdrant]
+
+  ticketing:
+    profiles: ["ticketing"]
+    build: .
+    command: ["uvicorn", "opspilot.ticketing.api:create_standalone_app", "--factory", "--host", "0.0.0.0", "--port", "8100"]
+    environment:
+      OPSPILOT_DB_PATH: /data/ticketing.db
+      OPSPILOT_TICKET_API_TOKEN: ${OPSPILOT_TICKET_API_TOKEN:-dev-ticket-token}
+    volumes: ["ticketing_data:/data"]
+    ports: ["8100:8100"]
+
+  n8n:
+    profiles: ["automation"]
+    image: n8nio/n8n:latest
+    environment:
+      OPSPILOT_URL: http://api:8000
+      OPSPILOT_AUTOMATION_TOKEN: ${OPSPILOT_AUTOMATION_TOKEN:-}
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+    volumes: ["n8n_data:/home/node/.n8n", "./automation/n8n:/workflows:ro"]
+    ports: ["5678:5678"]
+
+volumes:
+  qdrant_data:
+  opspilot_data:
+  ticketing_data:
+  n8n_data:

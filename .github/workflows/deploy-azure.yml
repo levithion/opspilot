@@ -1,0 +1,44 @@
+name: Deploy to Azure Container Apps
+
+# PAID OPTIONAL: deploying creates billable Azure resources (Container Apps, ACR, Key Vault, Log Analytics).
+# It never runs automatically; trigger it by hand only if you have decided to spend money.
+# Uses GitHub OIDC federation to Azure (no long-lived secrets).
+# One-time setup: docs/deploy-azure.md. Repository variables required:
+#   AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, AZURE_ACR_NAME, AZURE_CONTAINER_APP
+on:
+  workflow_dispatch:
+    inputs:
+      i_understand_this_costs_money:
+        description: 'Type "yes" to confirm Azure resources will be billed'
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    if: ${{ inputs.i_understand_this_costs_money == 'yes' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Build and push image to ACR
+        run: |
+          az acr build --registry "${{ vars.AZURE_ACR_NAME }}" --image "opspilot:${{ github.sha }}" .
+      - name: Roll out new revision
+        run: |
+          az containerapp update \
+            --name "${{ vars.AZURE_CONTAINER_APP }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --image "${{ vars.AZURE_ACR_NAME }}.azurecr.io/opspilot:${{ github.sha }}"
+      - name: Post-deploy health check
+        run: |
+          FQDN=$(az containerapp show -n "${{ vars.AZURE_CONTAINER_APP }}" -g "${{ vars.AZURE_RESOURCE_GROUP }}" --query properties.configuration.ingress.fqdn -o tsv)
+          for i in $(seq 1 30); do curl -fs "https://$FQDN/ready" && exit 0 || sleep 5; done
+          echo "health check failed; roll back with: az containerapp revision list" && exit 1

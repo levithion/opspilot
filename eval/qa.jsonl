@@ -1,0 +1,40 @@
+{"id":"q01","question":"How do I install the VPN client?","expected_doc":"vpn-setup","role":"employee","team":"Engineering"}
+{"id":"q02","question":"What is the VPN gateway address?","expected_doc":"vpn-setup","role":"employee","team":"Engineering"}
+{"id":"q03","question":"How long until my VPN session disconnects?","expected_doc":"vpn-setup","role":"employee","team":"Engineering"}
+{"id":"q04","question":"Which operating systems does Secure Connect support?","expected_doc":"vpn-setup","role":"employee","team":"Finance"}
+{"id":"q05","question":"VPN shows gateway unreachable error 809 at the hotel","expected_doc":"vpn-troubleshooting","role":"employee","team":"Engineering"}
+{"id":"q06","question":"Which ports does the VPN need open?","expected_doc":"vpn-troubleshooting","role":"employee","team":"HR"}
+{"id":"q07","question":"My VPN profile seems corrupted, can it be reset?","expected_doc":"vpn-troubleshooting","role":"employee","team":"Engineering"}
+{"id":"q08","question":"How do I reset my password?","expected_doc":"password-reset","role":"employee","team":"Engineering"}
+{"id":"q09","question":"How many characters must a password have?","expected_doc":"password-reset","role":"employee","team":"Finance"}
+{"id":"q10","question":"My account is locked after too many failed sign-in attempts","expected_doc":"password-reset","role":"employee","team":"HR"}
+{"id":"q11","question":"How often do passwords expire?","expected_doc":"password-reset","role":"employee","team":"Engineering"}
+{"id":"q12","question":"How do I set up Microsoft Authenticator for MFA?","expected_doc":"mfa-enrolment","role":"employee","team":"Engineering"}
+{"id":"q13","question":"I lost my phone and cannot approve MFA prompts","expected_doc":"mfa-enrolment","role":"employee","team":"Finance"}
+{"id":"q14","question":"What is a Temporary Access Pass and how long is it valid?","expected_doc":"mfa-enrolment","role":"employee","team":"Engineering"}
+{"id":"q15","question":"I got a new phone, how do I move my authenticator?","expected_doc":"mfa-enrolment","role":"employee","team":"HR"}
+{"id":"q16","question":"How do I get access to a SharePoint site?","expected_doc":"sharepoint-access","role":"employee","team":"Engineering"}
+{"id":"q17","question":"Can I share a SharePoint document with an external customer?","expected_doc":"sharepoint-access","role":"employee","team":"Finance"}
+{"id":"q18","question":"Who approves access to confidential libraries?","expected_doc":"sharepoint-access","role":"employee","team":"Engineering"}
+{"id":"q19","question":"How do I request a JetBrains or Figma licence?","expected_doc":"software-licenses","role":"employee","team":"Engineering"}
+{"id":"q20","question":"Who owns a software license and when does it renew?","expected_doc":"software-licenses","role":"team_lead","team":"Engineering"}
+{"id":"q21","question":"When are unused licences reclaimed?","expected_doc":"software-licenses","role":"employee","team":"HR"}
+{"id":"q22","question":"How often are laptops replaced?","expected_doc":"laptop-and-hardware","role":"employee","team":"Engineering"}
+{"id":"q23","question":"My laptop was stolen, what do I do?","expected_doc":"laptop-and-hardware","role":"employee","team":"Finance"}
+{"id":"q24","question":"What is the guest wifi password and how often does it change?","expected_doc":"wifi-and-network","role":"employee","team":"Engineering"}
+{"id":"q25","question":"Which wireless network should employees connect to?","expected_doc":"wifi-and-network","role":"employee","team":"HR"}
+{"id":"q26","question":"How do I report a phishing email?","expected_doc":"security-incident-reporting","role":"employee","team":"Engineering"}
+{"id":"q27","question":"I clicked a suspicious link and entered my credentials","expected_doc":"security-incident-reporting","role":"employee","team":"Finance"}
+{"id":"q28","question":"Which AI tools are approved for company data?","expected_doc":"ai-usage-policy","role":"employee","team":"Engineering"}
+{"id":"q29","question":"What happens when my team reaches its AI budget?","expected_doc":"ai-usage-policy","role":"team_lead","team":"Engineering"}
+{"id":"q30","question":"How do I get a new AI tool approved?","expected_doc":"ai-usage-policy","role":"employee","team":"HR"}
+{"id":"q31","question":"How long are chat transcripts kept?","expected_doc":"data-retention-and-privacy","role":"employee","team":"Engineering"}
+{"id":"q32","question":"How do I ask for my personal data to be deleted?","expected_doc":"data-retention-and-privacy","role":"employee","team":"Finance"}
+{"id":"q33","question":"When are accounts created for a new starter?","expected_doc":"onboarding-it-checklist","role":"employee","team":"HR"}
+{"id":"q34","question":"What is the SLA for an urgent ticket?","expected_doc":"helpdesk-sla","role":"employee","team":"Engineering"}
+{"id":"q35","question":"What are the helpdesk support hours?","expected_doc":"helpdesk-sla","role":"employee","team":"Finance"}
+{"id":"q36","question":"How large can an email attachment be?","expected_doc":"email-and-calendar","role":"employee","team":"Engineering"}
+{"id":"q37","question":"How do I release a secure print job?","expected_doc":"printers","role":"employee","team":"HR"}
+{"id":"q38","question":"Who can approve a password reset request and can admins approve their own?","expected_doc":"admin-privileged-access-runbook","role":"it_admin","team":"IT"}
+{"id":"q39","question":"What is the approval limit for software purchases in finance?","expected_doc":"finance-software-budget-approval","role":"employee","team":"Finance"}
+{"id":"q40","question":"What happens to a leaver's mailbox?","expected_doc":"hr-offboarding-procedure","role":"employee","team":"HR"}

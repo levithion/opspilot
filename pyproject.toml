@@ -1,0 +1,52 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "opspilot"
+version = "0.1.0"
+description = "Enterprise IT helpdesk agent platform: MCP tools, access-aware RAG, guardrails, cost governance."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.7",
+  "pydantic-settings>=2.3",
+  "httpx>=0.27",
+  "mcp>=1.2,<2",
+  "qdrant-client>=1.9",
+  "langgraph>=0.2",
+  "pyjwt[crypto]>=2.8",
+  "pyyaml>=6.0",
+  "anthropic>=0.40",
+  "openai>=1.40",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.5"]
+embeddings = ["sentence-transformers>=3"]
+tracing = ["langfuse>=2.40"]
+
+[project.scripts]
+opspilot-api = "opspilot.api.app:run"
+opspilot-mcp = "opspilot.mcp_server:main"
+opspilot-ingest = "opspilot.rag.ingest:main"
+opspilot-eval = "opspilot.rag.evaluate:main"
+opspilot = "opspilot.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["opspilot"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 130
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["B008"]  # FastAPI dependency injection uses Depends() in defaults
+per-file-ignores = { "tests/*" = ["E501"] }

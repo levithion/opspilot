@@ -1,0 +1,59 @@
+{
+  "name": "OpsPilot: email -> classify -> ticket -> notify",
+  "nodes": [
+    {
+      "parameters": { "mailbox": "INBOX", "postProcessAction": "read", "options": {} },
+      "id": "email-trigger", "name": "Helpdesk mailbox (IMAP)", "type": "n8n-nodes-base.emailReadImap", "typeVersion": 2, "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST", "url": "={{ $env.OPSPILOT_URL }}/api/automation/classify",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "Authorization", "value": "=Bearer {{ $env.OPSPILOT_AUTOMATION_TOKEN }}" },
+          { "name": "X-Client-Id", "value": "n8n" } ] },
+        "sendBody": true, "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.subject + '\\n' + $json.textPlain }) }}",
+        "options": { "timeout": 15000, "retry": { "maxTries": 3, "waitBetweenTries": 2000 } }
+      },
+      "id": "classify", "name": "Classify (LLM triage)", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [260, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST", "url": "={{ $env.OPSPILOT_URL }}/api/tools/create_ticket",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "Authorization", "value": "=Bearer {{ $env.OPSPILOT_AUTOMATION_TOKEN }}" },
+          { "name": "X-Client-Id", "value": "n8n" } ] },
+        "sendBody": true, "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ title: $('Helpdesk mailbox (IMAP)').item.json.subject.slice(0, 140), description: $('Helpdesk mailbox (IMAP)').item.json.textPlain.slice(0, 3900), category: $json.category, priority: $json.priority, on_behalf_of: $('Helpdesk mailbox (IMAP)').item.json.from.value[0].address, source: 'email' }) }}",
+        "options": { "timeout": 15000, "retry": { "maxTries": 3, "waitBetweenTries": 2000 } }
+      },
+      "id": "ticket", "name": "create_ticket (tool gateway)", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [520, 0]
+    },
+    {
+      "parameters": { "conditions": { "string": [ { "value1": "={{ $json.ticket.priority }}", "operation": "regex", "value2": "^(high|urgent)$" } ] } },
+      "id": "is-urgent", "name": "High or urgent?", "type": "n8n-nodes-base.if", "typeVersion": 1, "position": [780, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST", "url": "={{ $env.OPSPILOT_URL }}/api/tools/notify_channel",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "Authorization", "value": "=Bearer {{ $env.OPSPILOT_AUTOMATION_TOKEN }}" },
+          { "name": "X-Client-Id", "value": "n8n" } ] },
+        "sendBody": true, "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ channel: 'it-helpdesk', message: 'Ticket ' + $json.ticket.key + ' (' + $json.ticket.priority + '): ' + $json.ticket.title }) }}"
+      },
+      "id": "notify", "name": "notify_channel (Slack/Teams)", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [1040, -80]
+    }
+  ],
+  "connections": {
+    "Helpdesk mailbox (IMAP)": { "main": [[{ "node": "Classify (LLM triage)", "type": "main", "index": 0 }]] },
+    "Classify (LLM triage)": { "main": [[{ "node": "create_ticket (tool gateway)", "type": "main", "index": 0 }]] },
+    "create_ticket (tool gateway)": { "main": [[{ "node": "High or urgent?", "type": "main", "index": 0 }]] },
+    "High or urgent?": { "main": [[{ "node": "notify_channel (Slack/Teams)", "type": "main", "index": 0 }], []] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": false, "notes": "Set OPSPILOT_URL and OPSPILOT_AUTOMATION_TOKEN as n8n environment variables. The token is a JWT for the 'automation' service principal (see docs/automation.md)." }
+}

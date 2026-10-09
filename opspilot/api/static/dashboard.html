@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,"><title>OpsPilot dashboard</title><link rel="stylesheet" href="/static/style.css"></head>
+<body>
+<header><h1>OpsPilot · Operations &amp; cost</h1><a href="/">Chat</a><span class="grow"></span>
+<label for="who" style="color:var(--muted);font-size:13px">Sign in as</label><select id="who" aria-label="Sign in as"></select><button id="reload" class="secondary">Refresh</button></header>
+<div class="wide">
+  <p id="denied" style="display:none" class="panel">This dashboard needs the <b>it_admin</b> role. Sign in as Carol Costa.</p>
+  <div id="content" style="display:none">
+    <div class="cards" id="cards"></div>
+    <div class="grid2">
+      <div class="panel"><h2>Spend vs budget (this month)</h2><table id="teams"></table></div>
+      <div class="panel"><h2>Shadow-AI view (by client)</h2><table id="shadow"></table></div>
+      <div class="panel"><h2>Requests per day</h2><table id="daily"></table></div>
+      <div class="panel"><h2>Latency by span</h2><table id="spans"></table></div>
+      <div class="panel"><h2>Spend by model</h2><table id="models"></table></div>
+      <div class="panel"><h2>Audit log</h2><p id="audit"></p><table id="auditrows"></table></div>
+    </div>
+  </div>
+</div>
+<script src="/static/common.js"></script><script src="/static/dashboard.js"></script>
+</body></html>

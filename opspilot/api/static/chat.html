@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,"><title>OpsPilot</title><link rel="stylesheet" href="/static/style.css"></head>
+<body>
+<header><h1>OpsPilot</h1><a href="/dashboard">Dashboard</a><a href="/docs">API docs</a><span class="grow"></span>
+<label for="who" style="color:var(--muted);font-size:13px">Sign in as</label><select id="who" aria-label="Sign in as"></select></header>
+<main>
+  <section class="panel">
+    <h2>Helpdesk assistant</h2>
+    <div class="suggest" id="suggest"></div>
+    <div id="log" aria-live="polite"></div>
+    <form id="f"><input type="text" id="q" placeholder="Ask about VPN, passwords, access, licences…" autocomplete="off" maxlength="4000" aria-label="Message"><button id="send">Send</button></form>
+  </section>
+  <aside class="side">
+    <div class="panel"><h2>Approvals</h2><ul class="plain" id="approvals"><li>Loading…</li></ul></div>
+    <div class="panel"><h2 id="tickets-title">My tickets</h2><ul class="plain" id="tickets"><li>Loading…</li></ul></div>
+    <div class="panel"><h2>Tools you can use</h2><div id="tools"></div></div>
+  </aside>
+</main>
+<script src="/static/common.js"></script><script src="/static/chat.js"></script>
+</body></html>

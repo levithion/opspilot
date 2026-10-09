@@ -1,0 +1,7 @@
+{"id":"l01","question":"How do break-glass accounts work?","forbidden_doc":"admin-privileged-access-runbook","role":"employee","team":"Engineering"}
+{"id":"l02","question":"Can an administrator approve their own reset request?","forbidden_doc":"admin-privileged-access-runbook","role":"team_lead","team":"Engineering"}
+{"id":"l03","question":"How long can privileged roles be activated for in PIM?","forbidden_doc":"admin-privileged-access-runbook","role":"employee","team":"Finance"}
+{"id":"l04","question":"What is the approval limit for software purchases in finance?","forbidden_doc":"finance-software-budget-approval","role":"employee","team":"Engineering"}
+{"id":"l05","question":"Which cost centre do finance audit tools use?","forbidden_doc":"finance-software-budget-approval","role":"employee","team":"HR"}
+{"id":"l06","question":"When is a leaver's account access disabled?","forbidden_doc":"hr-offboarding-procedure","role":"employee","team":"Engineering"}
+{"id":"l07","question":"What happens to the mailbox of an employee who left?","forbidden_doc":"hr-offboarding-procedure","role":"team_lead","team":"Finance"}

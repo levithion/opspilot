@@ -1,0 +1,30 @@
+{"sender":"alice@opspilot.example","subject":"VPN keeps disconnecting","body":"The VPN gateway is unreachable from my home network since this morning and I cannot work.","category":"vpn","priority":"high"}
+{"sender":"bob@opspilot.example","subject":"Question about VPN client","body":"How do I install the Secure Connect VPN on my new Ubuntu laptop?","category":"vpn","priority":"low"}
+{"sender":"dave@opspilot.example","subject":"Locked out of my account","body":"I entered my password wrong five times and I am locked out. I need to reset my password urgently.","category":"password","priority":"high"}
+{"sender":"erin@opspilot.example","subject":"Password expiring","body":"My password expires next week, how do I change it?","category":"password","priority":"low"}
+{"sender":"alice@opspilot.example","subject":"Need access to the Finance SharePoint site","body":"Please grant me access to the Finance Reports SharePoint site for the quarterly review.","category":"access","priority":"medium"}
+{"sender":"dave@opspilot.example","subject":"New phone, MFA not working","body":"I got a new phone and the Authenticator prompts do not arrive. I cannot sign in at all.","category":"access","priority":"high"}
+{"sender":"bob@opspilot.example","subject":"Permission to shared folder","body":"I need permission to the design shared folder on SharePoint.","category":"access","priority":"medium"}
+{"sender":"erin@opspilot.example","subject":"Figma licence request","body":"Could I get a Figma licence for the new design project? Cost centre HR-300.","category":"licensing","priority":"medium"}
+{"sender":"alice@opspilot.example","subject":"JetBrains licence renewal","body":"My JetBrains licence seems to have expired, who owns the subscription?","category":"licensing","priority":"medium"}
+{"sender":"dave@opspilot.example","subject":"Monitor flickering","body":"My second monitor flickers every few minutes. Please send a replacement.","category":"hardware","priority":"medium"}
+{"sender":"bob@opspilot.example","subject":"Laptop battery swelling","body":"The laptop battery looks swollen and the keyboard is lifting. Can I get a new laptop?","category":"hardware","priority":"medium"}
+{"sender":"erin@opspilot.example","subject":"Headset not detected","body":"My headset is not detected by Teams.","category":"hardware","priority":"medium"}
+{"sender":"alice@opspilot.example","subject":"Wi-Fi drops on the 3rd floor","body":"The Wi-Fi network keeps dropping in the 3rd floor meeting rooms.","category":"network","priority":"medium"}
+{"sender":"dave@opspilot.example","subject":"Internet is down","body":"The internet is down for everyone on the Finance floor, we are blocked.","category":"network","priority":"urgent"}
+{"sender":"bob@opspilot.example","subject":"Phishing email received","body":"I received a suspicious email asking for my credentials. I think it is phishing.","category":"security","priority":"high"}
+{"sender":"erin@opspilot.example","subject":"Laptop stolen","body":"My laptop was stolen from my car last night.","category":"security","priority":"high"}
+{"sender":"alice@opspilot.example","subject":"Clicked a link","body":"I clicked a link in an email and entered my password, I think my account is compromised.","category":"security","priority":"high"}
+{"sender":"dave@opspilot.example","subject":"Possible data breach","body":"We found a breach: customer files appear on a public share. Everyone affected, this is a breach.","category":"security","priority":"urgent"}
+{"sender":"bob@opspilot.example","subject":"Install request","body":"Please install the latest update of Excel; it crashes when I open large files.","category":"software","priority":"medium"}
+{"sender":"erin@opspilot.example","subject":"Outlook crashing","body":"Outlook crashes on startup after the update.","category":"software","priority":"medium"}
+{"sender":"alice@opspilot.example","subject":"Need software installed","body":"I need Docker installed on my laptop, please.","category":"software","priority":"medium"}
+{"sender":"dave@opspilot.example","subject":"Office question","body":"What is the guest wifi password this week? Just wondering.","category":"network","priority":"low"}
+{"sender":"bob@opspilot.example","subject":"General IT question","body":"Where can I find the helpdesk support hours?","category":"general","priority":"low"}
+{"sender":"erin@opspilot.example","subject":"Onboarding new starter","body":"A new starter joins Monday, please prepare their accounts and equipment.","category":"general","priority":"medium"}
+{"sender":"alice@opspilot.example","subject":"VPN profile broken","body":"Please reset my VPN profile, the client says authentication failed. I cannot work remotely.","category":"vpn","priority":"high"}
+{"sender":"dave@opspilot.example","subject":"Printer fault","body":"The printer PRN-3F-02 is jammed.","category":"hardware","priority":"medium"}
+{"sender":"bob@opspilot.example","subject":"Mailbox access","body":"Please give me access to the support shared mailbox.","category":"access","priority":"medium"}
+{"sender":"erin@opspilot.example","subject":"Ransomware message on screen","body":"A ransom message appeared on my screen and files are locked, this is ransomware! Several colleagues too, outage.","category":"security","priority":"urgent"}
+{"sender":"alice@opspilot.example","subject":"Slow laptop","body":"My laptop is very slow lately, can someone look at it?","category":"hardware","priority":"medium"}
+{"sender":"dave@opspilot.example","subject":"Tableau seat","body":"Is there a free Tableau licence seat available for me?","category":"licensing","priority":"medium"}
