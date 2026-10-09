@@ -8,7 +8,7 @@ the dashboard are all free/open source.
 |---|---|---|
 | A real LLM | `OPSPILOT_LLM_PROVIDER=ollama` with [Ollama](https://ollama.com) running local models | `anthropic` / `openai` need `OPSPILOT_ALLOW_PAID_LLM=true`; otherwise the app refuses to start them |
 | Semantic embeddings | `pip install '.[embeddings]'` + `OPSPILOT_EMBEDDING_BACKEND=sentence-transformers` (local model download) | – |
-| Hosting | run locally / `docker compose up` | Azure (`infra/azure`, manual-only workflow) |
+| Hosting | run locally / `docker compose up`, or any container host with a free tier (the Dockerfile is portable; set a spending cap first) | any paid cloud |
 | Tracing | built-in SQLite traces; self-hosted Langfuse | Langfuse Cloud beyond its free tier |
 | SSO | dev auth mode; Microsoft 365 Developer tenant if eligible | – |
 | CI | GitHub Actions free allowance (unlimited on public repos; limited minutes on private) | – |
@@ -86,5 +86,5 @@ docker compose --profile ticketing --profile automation up   # + standalone tick
 | `opspilot/ticketing/` | Mock ticketing service and standalone REST API |
 | `kb/`, `eval/` | Knowledge base documents, 40 Q&A pairs, 7 access-leak probes |
 | `automation/` | n8n workflow, labelled emails, simulation script |
-| `docs/` | Architecture, MCP clients, security/GDPR note, Entra ID, automation, observability, Azure, runbook |
-| `infra/azure/`, `.github/workflows/` | Bicep for Container Apps, CI and deploy workflows |
+| `docs/` | Architecture, MCP clients, security/GDPR note, Entra ID, automation, observability, runbook |
+| `.github/workflows/` | CI: lint, tests with coverage gate, retrieval-quality gate, Docker build and smoke test |

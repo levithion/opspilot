@@ -36,11 +36,5 @@ real model to judge answer quality.
 
 * Real Claude/OpenAI API calls (adapter translation is unit-tested with fake SDK clients). These are paid and blocked unless `OPSPILOT_ALLOW_PAID_LLM=true`; the free real-model path is Ollama (`OPSPILOT_LLM_PROVIDER=ollama`), which is also untested here because no Ollama server was available.
 * Live Entra ID tenant, Langfuse server, Slack/Teams webhooks, n8n import, Power Automate.
-* The Azure deployment (no Azure CLI), and the compose `ticketing` / `automation` (n8n) profiles. The base image and the api + Qdrant compose stack were built and run.
-* The browser UI was syntax-checked (`node --check`) and its endpoints exercised over HTTP, but not clicked through.
-
-## How to turn these into resume bullets honestly
-
-Use only what you have run: e.g. "9-tool MCP server, 105 tests / 90 % coverage, 40-question retrieval set at 95 %
-hit@4 with 0/7 access leaks" is true today; "integrated with Claude Desktop and Cursor" becomes true after you
-connect them and record the demo; accuracy and handling-time claims need a real-provider run.
+* Any cloud deployment (none was attempted), and the compose `ticketing` / `automation` (n8n) profiles. The base image and the api + Qdrant compose stack were built and run.
+* Manual testing of the UI beyond the scripted headless-Chrome run used to take `docs/screenshots` (chat, approvals, dashboard, API docs, with no console errors).

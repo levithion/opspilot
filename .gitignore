@@ -12,3 +12,6 @@ data/
 *.db
 *.db-journal
 .DS_Store
+
+# Personal planning notes (not for the public repo)
+PLAN.local.md

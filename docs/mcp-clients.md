@@ -80,4 +80,4 @@ npx @modelcontextprotocol/inspector .venv/bin/python -m opspilot.mcp_server
 > **Verification status:** the server is tested in CI through the MCP protocol (in-memory and a real stdio
 > subprocess using the official client), and was used from **Claude Desktop** (a `search_kb` call from a chat,
 > recorded in the audit log with client id `claude-desktop`). Cursor and VS Code/Copilot are configured per the
-> snippets above but have not been exercised; verify them before listing them on a resume.
+> snippets above but have not been exercised; verify them before relying on them.

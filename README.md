@@ -1,144 +1,172 @@
-# Project Idea: OpsPilot, an Enterprise IT Helpdesk Agent Platform
+# OpsPilot
 
-One project designed to cover every gap in your resume against the Netradyne AI Automation Engineer JD, so that you can build it once and defend it end to end in an interview.
+[![CI](https://github.com/levithion/opspilot/actions/workflows/ci.yml/badge.svg)](https://github.com/levithion/opspilot/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
+![Cost](https://img.shields.io/badge/runs%20for-%240-brightgreen)
 
-**Pitch (one line):** A secure, observable, cost-governed AI helpdesk that takes an employee request ("I can't access SharePoint", "reset my VPN", "who owns this license?"), answers it from company knowledge (RAG), and performs approved actions (create ticket, check access, notify Slack/Teams) through MCP tools, with every step logged, budgeted and permission-checked.
+**A secure, observable, cost-governed AI helpdesk.** An employee asks "I can't connect to the VPN" or "who owns this
+licence?". OpsPilot answers from company knowledge (RAG with citations) and performs *approved* actions (open a ticket,
+look up access, request a reset, notify a channel) through [MCP](https://modelcontextprotocol.io) tools. Every step is
+permission-checked, logged in a tamper-evident audit trail, and counted against a team budget.
 
----
+It runs **fully offline with no API keys and no cost**. A deterministic mock LLM and a local embedder are the defaults,
+so the whole platform, its tests and its demo work on a laptop. Real models are opt-in.
 
-## 1. Why this project
+![OpsPilot chat: request, tool calls and approval reference](docs/screenshots/chat-approval-pending.png)
 
-| JD theme | How OpsPilot covers it |
+## What it demonstrates
+
+| Capability | How |
 |---|---|
-| Reusable agents, workflows, MCP connectors | Core of the project: MCP server plus agent workflows |
-| Integrate with Claude, OpenAI, Copilot, Cursor | The same MCP server is plugged into several clients |
-| Automate business workflows | n8n and/or Power Automate pipelines around the agent |
-| Software-engineering practices | Git, pytest, CI, Docker, structured logging |
-| Partner with function teams, scale from prototype to production | Reusable "agent template" others can copy |
-| Responsible AI, GDPR, InfoSec | PII redaction, guardrails, least-privilege scopes, audit log |
-| Govern Gen AI budgets, shadow-AI spend | Token and cost tracker with per-team budgets and alerts |
-| Monitor and troubleshoot in production | Tracing, dashboards, alerts |
-| Microsoft 365 / SharePoint / Power Platform | SharePoint as the knowledge source, Power Automate flow |
-| Cloud (Azure / AWS) | Deployed on Azure (or AWS) |
-| Identity (Entra ID, SSO, LDAP, VPN) | Entra ID / OAuth2 login and role-based access |
+| **One tool server, many clients** | A FastMCP server with 9 tools. The same process works with Claude Desktop, Cursor and VS Code/Copilot, and an HTTP gateway gives n8n and Power Automate the same tools. |
+| **Policy enforced in one place** | Every call from MCP, the agent or HTTP passes through a single registry: allow-list, scope check (RBAC), schema validation, output screening, audit, tracing. |
+| **Human approval for risky actions** | `reset_request` can only file an approval. A *different* IT admin must approve it; self-approval and double decisions are rejected; the approver is recorded in the audit log. |
+| **Access-aware RAG** | Qdrant search with role and team filters applied *inside* the vector search, so restricted chunks never take a top-K slot. Hybrid ranking (dense score plus term coverage). |
+| **Responsible AI** | PII and secret redaction before text reaches an LLM, a log, a ticket or a notification; prompt-injection screening of user input, retrieved documents and tool output; least-privilege tool visibility. |
+| **Identity** | Microsoft Entra ID OIDC bearer tokens (RS256, issuer/audience/expiry checks, app-only tokens for automation), role-to-scope mapping. Dev tokens for local use. |
+| **Cost governance** | Token and cost ledger per team, budgets that warn at 80% and stop at 100%, and a shadow-AI view that flags usage from unregistered clients. |
+| **Observability** | Per-request traces (agent, LLM and tool spans), structured JSON logs, metrics dashboard; optional Langfuse mirroring. |
+| **Reusable agents** | LangGraph workflow (intake guardrails, triage, resolver loop, finalize) configured by YAML templates: prompt, tool allow-list, policies. |
+| **Automation** | n8n workflow and Power Automate guide for email to classify to ticket to notify. |
 
----
-
-## 2. Architecture (high level)
+## Architecture
 
 ```
- Employee ──► Chat UI (FastAPI + simple web page / Teams / Slack)
-                 │   (Entra ID / OAuth2 login, roles)
-                 ▼
-          Agent Orchestrator (LangGraph or Claude Agent SDK / OpenAI Agents SDK)
-           │        │          │              │
-           │        │          │              └─► Guardrails (PII redaction, prompt-injection checks,
-           │        │          │                   action allow-list, human approval for risky actions)
-           │        │          └─► Cost & Usage Tracker (tokens, $ per team, budget alerts)
-           │        └─► RAG pipeline (embeddings + Qdrant, SharePoint / docs as source, access-aware)
-           ▼
-     MCP Server (Python, FastMCP)  ── tools:
-        • search_kb(query)            • create_ticket(...)
-        • get_user_access(user)       • notify_channel(...)
-        • get_ai_spend_report(team)   • reset_request(...)  [approval-gated]
-           ▲
-           └── Same server connected to: Claude Desktop, Cursor, GitHub Copilot / VS Code, OpenAI-based client
-
- n8n / Power Automate: inbound email → classify (LLM) → ticket → notify, calling the same tools via HTTP/MCP
- Observability: Langfuse (or OpenTelemetry) traces + structured logs + dashboard
- Deployment: Docker → Azure App Service / Container Apps (or AWS Lambda / ECS), GitHub Actions CI/CD
+ Employee / Claude Desktop / Cursor / n8n / Power Automate
+            │  Entra ID bearer token  ->  Principal (user, team, roles -> scopes)
+            ▼
+   FastAPI  ·  MCP server          rate limit, request id, security headers
+            │
+   LangGraph agent:  intake ─► triage ─► resolve ⇄ act ─► finalize
+            │                  (guardrails, budget check at every LLM call)
+            ▼
+   ToolRegistry.call  ── allow-list ► scope ► validate ► run ► screen output ► audit ► trace
+      │            │             │               │               │
+   Retriever    Ticketing     Directory       Notifier        Approvals
+   + Qdrant     (SQLite or    (access,        (Slack/Teams    (IT admin decides,
+   (role/team    REST API)     licences)       + outbox)       executes, audits)
+    filters)
 ```
 
----
+Design notes and known limits: [docs/architecture.md](docs/architecture.md).
 
-## 3. Build plan (phased, so you always have something showable)
+## Screenshots
 
-### Phase 1: MCP server and core tools (the biggest JD gap)
-- Build a Python MCP server (official MCP Python SDK / FastMCP) exposing 4-6 tools above, backed by a mock ticketing API (SQLite + FastAPI) so no paid system is needed.
-- Connect it to **Claude Desktop** and **Cursor** and record a short demo.
-- Add tests with `pytest` (tool inputs, error cases) and a GitHub Actions CI job.
-- **Outcome to record:** number of tools, clients connected, test coverage.
+Captured from the running app with the offline demo data (see [docs/screenshots](docs/screenshots)).
 
-### Phase 2: RAG over a knowledge base
-- Ingest IT policy / FAQ documents (use public or self-written docs; SharePoint export if you have a developer tenant).
-- Chunk, embed, store in Qdrant (you already know it from Lumina); answer with citations.
-- Make retrieval **access-aware**: each chunk carries a team/role tag and the user's role filters results (reuse your "filter inside Qdrant before top-K" idea from Lumina).
-- **Outcome to record:** retrieval hit rate on a small test set of questions (build 30-50 Q&A pairs).
+### Answers with citations
+![Cited answer from the knowledge base](docs/screenshots/chat-search-kb.png)
 
-### Phase 3: Agent workflow
-- Use LangGraph (or the Claude Agent SDK / OpenAI Agents SDK) so the agent plans, calls MCP tools, and asks for **human approval** before risky actions.
-- Add a second agent or sub-flow if useful (triage agent + resolver agent).
-- Package the agent as a **reusable template** (config file for tools, prompts, policies) so a new team can spin one up.
+### Human approval for risky actions
+The assistant can only *request* a reset. An IT admin approves it in the console, and only then does it run.
 
-### Phase 4: Automation workflows (n8n / Power Automate)
-- n8n flow: incoming email → LLM classifies urgency and category → calls `create_ticket` → posts to Slack/Teams.
-- Power Automate (or Copilot Studio) flow: new SharePoint list item → calls your API → writes the result back.
-- **Outcome to record:** average handling time before and after (simulated on a test set) and tasks automated per run.
+![Reset request pending approval](docs/screenshots/chat-approval-pending.png)
+![Admin sees the pending request](docs/screenshots/approvals-console-pending.png)
+![After approval the request is executed](docs/screenshots/approvals-console-approved.png)
 
-### Phase 5: Security, identity and responsible AI
-- **Entra ID / OAuth2 (OIDC)** login on the FastAPI app, with roles (employee, IT admin) and RBAC on tools.
-- Least-privilege scopes for each tool; secrets in environment variables / Azure Key Vault.
-- **PII redaction** before text is sent to any LLM or logged (emails, phone numbers, IDs).
-- **Prompt-injection checks** on retrieved documents and tool outputs; allow-list of actions.
-- Immutable **audit log** of every tool call (who, what, when, approved by).
-- Write a one-page note: how the design maps to GDPR principles (data minimisation, purpose limitation, retention, right to erasure) and to InfoSec expectations.
+### Guardrails
+![Prompt-injection attempt blocked](docs/screenshots/chat-injection-blocked.png)
+![Phone number and email redacted in the stored ticket](docs/screenshots/chat-pii-redacted-ticket.png)
 
-### Phase 6: Observability and cost governance
-- Trace every request (prompt, tool calls, latency, tokens) with **Langfuse** (self-hostable) or OpenTelemetry.
-- Build a small dashboard: requests/day, p95 latency, error rate, token usage and cost per team/model.
-- Implement **budgets and alerts** (e.g. warn at 80% of a team's monthly budget, hard-stop at 100%) and a "shadow AI" view: usage grouped by API key / client so unknown usage stands out.
-- **Outcome to record:** cost per resolved request, % of requests blocked by guardrails.
+### Operations and cost dashboard
+![Dashboard overview](docs/screenshots/dashboard-top.png)
+![Spend versus budget per team](docs/screenshots/spend-vs-budget.png)
+![Usage by client with unregistered clients flagged](docs/screenshots/shadow-ai.png)
+![Hash-chained audit log with approver](docs/screenshots/audit-log.png)
 
-### Phase 7: Deploy and harden
-- Dockerise; deploy to **Azure** (App Service or Container Apps) or **AWS** (Lambda / ECS).
-- CI/CD with GitHub Actions: lint, test, build image, deploy.
-- Add health checks, retries and timeouts; write a short runbook (how to debug a failing agent run).
+<details>
+<summary>Full dashboard page</summary>
 
----
+![Full dashboard](docs/screenshots/dashboard-full.png)
 
-## 4. Suggested tech stack
+</details>
 
-| Area | Choice |
+### API
+![OpenAPI documentation](docs/screenshots/api-docs.png)
+
+## Quickstart
+
+```bash
+git clone https://github.com/levithion/opspilot.git && cd opspilot
+uv venv --python 3.12 .venv && source .venv/bin/activate      # or: python -m venv .venv
+uv pip install -e ".[dev]"                                     # or: pip install -e ".[dev]"
+
+opspilot-api                    # http://localhost:8000   (chat UI, /dashboard, /docs)
+python scripts/demo.py          # in a second terminal: realistic traffic for the dashboard
+```
+
+Open `http://localhost:8000`, choose **Alice** and ask "Please reset my VPN, it keeps failing". Switch to **Carol Costa**
+(IT admin) to approve it and to open `/dashboard`.
+
+**Use it from Claude Desktop, Cursor or VS Code:** see [docs/mcp-clients.md](docs/mcp-clients.md).
+
+**Docker:** `docker compose up --build` starts the API and a Qdrant server (`OPSPILOT_PORT=8010` if 8000 is busy).
+
+### Using a real model (optional)
+
+| Option | Cost | Setup |
+|---|---|---|
+| Mock (default) | free | nothing |
+| Ollama (local models) | free | `ollama pull llama3.2`, then `OPSPILOT_LLM_PROVIDER=ollama` |
+| Anthropic / OpenAI | **paid per token** | set `OPSPILOT_ALLOW_PAID_LLM=true` plus the provider and API key; the app refuses to start them otherwise |
+
+Copy `.env.example` to `.env` for all settings.
+
+## Quality and results
+
+Measured with the offline mock LLM and hashing embedder (not a model-quality benchmark):
+
+| Check | Result |
 |---|---|
-| Language / API | Python, FastAPI, Pydantic (Java optional, not needed) |
-| MCP | Official MCP Python SDK (FastMCP) |
-| Agents | LangGraph, or Claude Agent SDK / OpenAI Agents SDK |
-| LLMs | Claude API (primary), OpenAI API (second provider to show portability) |
-| RAG | Sentence-Transformers or API embeddings, Qdrant |
-| Workflow automation | n8n (self-hosted) and/or Power Automate |
-| Microsoft ecosystem | SharePoint (docs), Power Automate, Teams webhook; Copilot Studio if available |
-| Identity | Microsoft Entra ID (OAuth2/OIDC), RBAC |
-| Observability | Langfuse or OpenTelemetry, structured JSON logs |
-| Cloud | Azure (free credits) or AWS free tier |
-| DevOps | Docker, GitHub Actions, pytest |
+| Automated tests | 113 passing, about 89% line coverage, including a real stdio MCP subprocess test |
+| CI | GitHub Actions: ruff, pytest with a coverage gate, retrieval-quality gate, Docker build and smoke test |
+| Retrieval (40 hand-written Q&A) | hit@1 95%, hit@4 100%, MRR 0.969 |
+| Access-control leakage probes | 0 of 7 restricted documents leaked |
+| Verified from Claude Desktop | search with citation, approval-gated reset, permission denial, approval status, all in the audit log |
 
----
+The retrieval set is small and written by the same author as the knowledge base, so read it as a regression gate, not as
+general accuracy. Full numbers, commands and what is **not** verified: [docs/RESULTS.md](docs/RESULTS.md).
 
-## 5. Resume bullets to add after you build it
+```bash
+pytest --cov=opspilot                  # tests
+python -m opspilot.rag.evaluate        # retrieval hit-rate and access-leak check
+python automation/simulate.py          # email -> ticket automation on 30 labelled emails
+```
 
-Fill in the real numbers you measure. Do not copy these as they are.
+## Repository map
 
-**OpsPilot: Enterprise IT Helpdesk Agent Platform** | GitHub | Month Year – Month Year
-- Built a Python **MCP server** exposing *N* helpdesk tools (ticketing, access lookup, spend reports) and integrated it with **Claude Desktop, Cursor** and *[other clients]*, with pytest and GitHub Actions CI.
-- Designed an access-aware **RAG** pipeline (Qdrant, SharePoint-sourced docs) with an agentic **LangGraph** workflow and human-approval gate, reaching *X%* answer accuracy on a *N*-question test set.
-- Automated email-to-ticket triage with **n8n / Power Automate** (LLM classification, Slack/Teams notification), cutting simulated handling time by *X%*.
-- Secured the platform with **Entra ID / OAuth2** SSO, RBAC, PII redaction, prompt-injection guardrails and an audit log, aligned to GDPR principles.
-- Added **Langfuse tracing** and a **token-cost governance** dashboard with per-team budgets and alerts; deployed on **Azure** via Docker and GitHub Actions.
+| Path | Contents |
+|---|---|
+| `opspilot/mcp_server.py` | FastMCP server (9 tools, 1 prompt) |
+| `opspilot/tools/` | Tool registry, tool definitions, approval service |
+| `opspilot/agent/`, `agent_templates/` | LangGraph workflow and reusable YAML agent templates |
+| `opspilot/rag/`, `kb/`, `eval/` | Chunking, embeddings, Qdrant store, evaluation; sample knowledge base and test sets |
+| `opspilot/security/` | PII redaction, injection guardrails, OIDC auth, RBAC, hash-chained audit log |
+| `opspilot/cost/`, `opspilot/observability/` | Cost and budgets, tracing, metrics, logging |
+| `opspilot/api/` | FastAPI app, chat UI and dashboard |
+| `opspilot/ticketing/` | Mock ticketing service and standalone REST API |
+| `automation/` | n8n workflow, labelled emails, simulation script |
+| `docs/` | Architecture, MCP clients, security and GDPR note, Entra ID, automation, observability, runbook |
 
-**Skills row to add:** MCP, LangGraph, n8n, Power Automate, SharePoint, Entra ID (OAuth2/OIDC), Azure, Langfuse/OpenTelemetry, RAG, Guardrails, RBAC.
+## Security and privacy
 
----
+Threat model, controls and GDPR mapping: [docs/security-gdpr.md](docs/security-gdpr.md). Entra ID setup:
+[docs/entra-id.md](docs/entra-id.md). The guardrails are pattern-based first-line defences, not a guarantee, and
+the project has not had an external security review.
 
-## 6. Interview talking points
+## Status and limitations
 
-- Why MCP: one tool server reused across Claude, Cursor and Copilot instead of one integration per client.
-- How you stop an agent from doing harm: allow-lists, approval gates, least privilege, audit log.
-- How you handled PII and what you log versus what you redact.
-- How you measured quality (test set, retrieval hit rate) and cost (cost per resolved request).
-- What you would change to take it from prototype to production (queueing, retries, secrets management, multi-tenant isolation).
+- **Verified:** the test suite and CI, the Docker image and API plus Qdrant compose stack, the web UI (screenshots in
+  `docs/screenshots`), and MCP from Claude Desktop.
+- **Not verified:** Cursor and VS Code/Copilot (configs provided), a live Entra ID tenant, Slack/Teams webhooks, n8n
+  import, Power Automate, Langfuse, Ollama, and any cloud deployment.
+- **Demo-grade pieces:** SQLite (single replica), in-process rate limiting, simulated effects for approved resets, a
+  seeded demo directory, and regex-based PII and injection detection. The production changes are listed in
+  [docs/architecture.md](docs/architecture.md#known-limits-what-changes-for-production).
+- The knowledge base in `kb/` is invented sample content.
 
----
+## Documentation
 
-## 7. Realistic scope
-
-If time is tight, build in this order and stop when you run out of time: **Phase 1 → 2 → 5 (OAuth + PII) → 6 → 7 → 4 → 3**. Phases 1, 2, 5 and 6 give you MCP, RAG, identity, responsible AI, observability and cost governance. Deployment (7) then covers cloud. Only list on your resume what you have actually built and can explain.
+[Architecture](docs/architecture.md) · [MCP clients](docs/mcp-clients.md) · [Security and GDPR](docs/security-gdpr.md) ·
+[Entra ID](docs/entra-id.md) · [Automation](docs/automation.md) · [Observability and budgets](docs/observability.md) ·
+[Runbook](docs/runbook.md) · [Results](docs/RESULTS.md)
